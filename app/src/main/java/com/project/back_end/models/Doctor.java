@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
-import java.util.Arrays;
-import java.util.ArrayList;
 
 @Entity
 @Table(name = "doctors") // References the 'doctors' SQL table
@@ -65,8 +63,12 @@ public class Doctor {
     //      - Each time slot is represented as a string (e.g., "09:00-10:00", "10:00-11:00").
     //      - The @ElementCollection annotation ensures that the list of time slots is stored as a separate collection in the database.
     // Using a converter to store the list as a single column in the 'doctors' table
-    @Convert(converter = StringListConverter.class)
-    @Column(name = "available_times", columnDefinition = "json") 
+    @ElementCollection(fetch = FetchType.EAGER) // EAGER loads times whenever you load a Doctor
+    @CollectionTable(
+        name = "doctor_available_times",        // Name of the secondary table
+        joinColumns = @JoinColumn(name = "doctor_id") // Foreign key to Doctor table
+    )
+    @Column(name = "available_time")
     private List<String> availableTimes; //
 
     // Constructors
@@ -102,23 +104,5 @@ public class Doctor {
 
     public List<String> getAvailableTimes() { return availableTimes; }
     public void setAvailableTimes(List<String> availableTimes) { this.availableTimes = availableTimes; }
-}
-
-// ---------------------------------------------------------
-// Helper Converter: Converts List<String> to String for DB
-// ---------------------------------------------------------
-@Converter
-class StringListConverter implements AttributeConverter<List<String>, String> {
-    @Override
-    public String convertToDatabaseColumn(List<String> list) {
-        if (list == null) return null;
-        return String.join(",", list); 
-    }
-
-    @Override
-    public List<String> convertToEntityAttribute(String dbData) {
-        if (dbData == null || dbData.isEmpty()) return new ArrayList<>();
-        return new ArrayList<>(Arrays.asList(dbData.split(",")));
-    }
 }
 
