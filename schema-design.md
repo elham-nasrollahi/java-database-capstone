@@ -1,6 +1,6 @@
 ## MySQL Database Design
-### Table: Patients
-CREATE TABLE patients (
+### Table: Patient
+CREATE TABLE patient (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,        
     name VARCHAR(100) NOT NULL,                  
     email VARCHAR(255) NOT NULL UNIQUE,          
@@ -9,8 +9,8 @@ CREATE TABLE patients (
     address VARCHAR(255) NOT NULL                
 );
 
-### Table: Doctors
-CREATE TABLE doctors (
+### Table: Doctor
+CREATE TABLE doctor (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,        
     name VARCHAR(100) NOT NULL,                  
     specialty VARCHAR(50) NOT NULL,              
@@ -27,24 +27,24 @@ CREATE TABLE admin (
     password VARCHAR(255) NOT NULL               
 );
 
-### Table: Appointments
-CREATE TABLE appointments (
+### Table: Appointment
+CREATE TABLE appointment (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,        
     doctor_id BIGINT NOT NULL,                   
     patient_id BIGINT NOT NULL,                  
     appointment_time DATETIME NOT NULL,          
     status INT NOT NULL DEFAULT 0,               
     CONSTRAINT fk_appointment_doctor 
-        FOREIGN KEY (doctor_id) REFERENCES doctors(id) 
+        FOREIGN KEY (doctor_id) REFERENCES doctor(id) 
         ON DELETE CASCADE,
     CONSTRAINT fk_appointment_patient 
-        FOREIGN KEY (patient_id) REFERENCES patients(id) 
+        FOREIGN KEY (patient_id) REFERENCES patient(id) 
         ON DELETE CASCADE
 );
 
 ## MongoDB Collection Design
 
-### Collection: prescriptions
+### Collection: prescription
 {
   "id": "653a1b2c8d9e4f0012345678",
   "patientName": "Sarah Conner",

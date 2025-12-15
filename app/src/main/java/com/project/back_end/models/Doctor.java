@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 @Entity
-@Table(name = "doctors") // References the 'doctors' SQL table
+@Table(name = "doctor") // References the 'doctors' SQL table
 public class Doctor {
 
     @Id
@@ -68,7 +68,7 @@ public class Doctor {
         name = "doctor_available_times",        // Name of the secondary table
         joinColumns = @JoinColumn(name = "doctor_id") // Foreign key to Doctor table
     )
-    @Column(name = "available_time")
+    @Column(name = "available_times")
     private List<String> availableTimes; //
 
     // Constructors
