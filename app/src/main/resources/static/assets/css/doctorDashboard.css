@@ -63,3 +63,121 @@
 
 Let me know if you'd like a consolidated style guide for the entire HospitalCRM frontend.
  */
+
+ /* doctorDashboard.css */
+
+/* -----------------------------------------------------------
+   Table Header Text
+   Targeting an element with class .table-header (e.g., an <h2>)
+----------------------------------------------------------- */
+.table-header {
+    font-size: 24px; /* */
+    color: #015c5d; /* Dark Teal */
+    margin-bottom: 30px; /* */
+    margin-right: 0; /* */
+}
+
+/* -----------------------------------------------------------
+   Table Styling
+   Generic styling for the patient table
+----------------------------------------------------------- */
+table {
+    width: 100%; /* */
+    border-collapse: collapse; /* */
+    font-family: sans-serif; /* */
+    margin-top: 20px; /* */
+}
+
+/* -----------------------------------------------------------
+   Table Head Styling
+----------------------------------------------------------- */
+thead {
+    background-color: #33333310; /* Very light dark background */
+    color: #fff; /* White text */
+}
+
+/* -----------------------------------------------------------
+   Table Cells (Header and Body)
+----------------------------------------------------------- */
+td, th {
+    padding: 12px 16px; /* */
+    text-align: center; /* */
+    border-bottom: 1px solid #ddd; /* Subtle border */
+}
+
+/* -----------------------------------------------------------
+   Table Row Styling
+----------------------------------------------------------- */
+/* Even rows: semi-transparent light grey */
+tr:nth-child(even) {
+    background-color: #f9f9f959; /* */
+}
+
+/* Odd rows: soft white background */
+tr:nth-child(odd) {
+    background-color: #ffffffc0; /* */
+}
+
+/* Hover effect: highlight row with light teal overlay */
+tr:hover {
+    background-color: #015c5d39; /* */
+}
+
+/* -----------------------------------------------------------
+   Prescription Button
+   Small interactive button inside table cells
+----------------------------------------------------------- */
+.prescription-btn {
+    width: 30px; /* */
+    height: 30px; /* */
+    cursor: pointer; /* */
+    border: none;
+    background-color: transparent; /* Assuming icon-based or transparent */
+    transition: transform 0.2s ease, filter 0.2s ease; /* */
+}
+
+.prescription-btn:hover {
+    transform: scale(1.1); /* Slightly enlarge */
+    filter: brightness(1.2); /* Brighten appearance */
+}
+
+.prescription-btn:active {
+    transform: scale(0.95); /* Slightly shrink on click */
+}
+
+/* -----------------------------------------------------------
+   No Record Message
+----------------------------------------------------------- */
+.noPatientRecord {
+    font-size: 16px; /* */
+    font-style: italic; /* */
+    color: grey; /* */
+    text-align: center;
+    padding: 20px;
+}
+
+/* -----------------------------------------------------------
+   Today Button
+----------------------------------------------------------- */
+.today-btn {
+    margin-right: 10px; /* */
+    padding: 10px; /* */
+    background-color: #015c5d; /* Teal Green */
+    color: white; /* Implied for readability on teal */
+    border: none;
+    cursor: pointer;
+    border-radius: 8px; /* Consistent with other buttons */
+}
+
+/* -----------------------------------------------------------
+   Date Picker
+----------------------------------------------------------- */
+.date-picker {
+    margin-left: 10px; /* */
+    margin-top: 13px; /* */
+    border-radius: 8px; /* */
+    padding: 10px; /* */
+    height: 30px; /* */
+    border: 1px solid #ccc;
+    box-sizing: border-box; /* Ensures padding doesn't affect height calculation */
+}
