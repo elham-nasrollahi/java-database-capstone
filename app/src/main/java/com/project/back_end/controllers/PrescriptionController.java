@@ -1,33 +1,72 @@
 package com.project.back_end.controllers;
 
+import com.project.back_end.models.Prescription;
+import com.project.back_end.services.AppointmentService;
+import com.project.back_end.services.PrescriptionService;
+import com.project.back_end.services.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid; // Assuming Spring Boot 3 / Jakarta EE, otherwise javax.validation
+import java.util.HashMap;
+import java.util.Map;
+
+// 1. Set Up the Controller Class
+@RestController
+@RequestMapping("${api.path}" + "prescription")
 public class PrescriptionController {
-    
-// 1. Set Up the Controller Class:
-//    - Annotate the class with `@RestController` to define it as a REST API controller.
-//    - Use `@RequestMapping("${api.path}prescription")` to set the base path for all prescription-related endpoints.
-//    - This controller manages creating and retrieving prescriptions tied to appointments.
 
+    // 2. Autowire Dependencies
+    private final PrescriptionService prescriptionService;
+    private final Service service;
+    private final AppointmentService appointmentService;
 
-// 2. Autowire Dependencies:
-//    - Inject `PrescriptionService` to handle logic related to saving and fetching prescriptions.
-//    - Inject the shared `Service` class for token validation and role-based access control.
-//    - Inject `AppointmentService` to update appointment status after a prescription is issued.
+    @Autowired
+    public PrescriptionController(PrescriptionService prescriptionService,
+                                  Service service,
+                                  AppointmentService appointmentService) {
+        this.prescriptionService = prescriptionService;
+        this.service = service;
+        this.appointmentService = appointmentService;
+    }
 
+    // 3. Define the `savePrescription` Method
+    // Handles POST requests to save a new prescription. Validates doctor token.
+    // Updates appointment status and delegates save logic.
+    @PostMapping("/{token}")
+    public ResponseEntity<Map<String, String>> savePrescription(@Valid @RequestBody Prescription prescription,
+                                                                @PathVariable String token) {
+        Map<String, String> response = new HashMap<>();
 
-// 3. Define the `savePrescription` Method:
-//    - Handles HTTP POST requests to save a new prescription for a given appointment.
-//    - Accepts a validated `Prescription` object in the request body and a doctor’s token as a path variable.
-//    - Validates the token for the `"doctor"` role.
-//    - If the token is valid, updates the status of the corresponding appointment to reflect that a prescription has been added.
-//    - Delegates the saving logic to `PrescriptionService` and returns a response indicating success or failure.
+        // Validate token for "doctor" role
+        if (service.validateToken(token, "doctor")) {
+            // Update the status of the corresponding appointment (e.g., status 1 for "Prescribed/Completed")
+            appointmentService.changeStatus(1, prescription.getAppointmentId());
 
+            // Delegate saving logic to PrescriptionService
+            return prescriptionService.savePrescription(prescription);
+        } else {
+            response.put("message", "Unauthorized access.");
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
+    }
 
-// 4. Define the `getPrescription` Method:
-//    - Handles HTTP GET requests to retrieve a prescription by its associated appointment ID.
-//    - Accepts the appointment ID and a doctor’s token as path variables.
-//    - Validates the token for the `"doctor"` role using the shared service.
-//    - If the token is valid, fetches the prescription using the `PrescriptionService`.
-//    - Returns the prescription details or an appropriate error message if validation fails.
+    // 4. Define the `getPrescription` Method
+    // Handles GET requests to retrieve a prescription by appointment ID.
+    @GetMapping("/{appointmentId}/{token}")
+    public ResponseEntity<Map<String, Object>> getPrescription(@PathVariable Long appointmentId,
+                                                               @PathVariable String token) {
+        Map<String, Object> response = new HashMap<>();
 
-
+        // Validate token for "doctor" role
+        if (service.validateToken(token, "doctor")) {
+            // Fetch prescription using PrescriptionService
+            return prescriptionService.getPrescription(appointmentId);
+        } else {
+            response.put("message", "Unauthorized access.");
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
+    }
 }
