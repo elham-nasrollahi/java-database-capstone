@@ -1,5 +1,3 @@
-package com.project.back_end.services;
-
 import com.project.back_end.DTO.Login;
 import com.project.back_end.models.Appointment;
 import com.project.back_end.models.Doctor;
@@ -19,15 +17,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+// 1. Add @Service Annotation
 @Service
 public class DoctorService {
 
     private final DoctorRepository doctorRepository;
     private final AppointmentRepository appointmentRepository;
     private final TokenService tokenService;
-    private final com.project.back_end.services.Service service; // Used for password hashing
+    private final com.project.back_end.services.Service service;
 
-    // 2. Constructor Injection for Dependencies
+    // 2. Constructor Injection
     @Autowired
     public DoctorService(DoctorRepository doctorRepository, 
                          AppointmentRepository appointmentRepository, 
@@ -39,70 +38,61 @@ public class DoctorService {
         this.service = service;
     }
 
-    // 4. getDoctorAvailability Method
-    // Retrieves available slots for a specific date by removing booked appointments.
-    @Transactional(readOnly = true) // 3. Add @Transactional
+    // 4. getDoctorAvailability
+    @Transactional(readOnly = true) 
     public List<String> getDoctorAvailability(Long doctorId, String date) {
         Optional<Doctor> doctorOpt = doctorRepository.findById(doctorId);
         if (doctorOpt.isEmpty()) return new ArrayList<>();
 
         Doctor doctor = doctorOpt.get();
-        List<String> allSlots = doctor.getAvailableTimes(); // e.g., ["09:00", "10:00"]
+        List<String> allSlots = doctor.getAvailableTimes();
         
-        // Calculate start and end of the day for the query
         LocalDate localDate = LocalDate.parse(date);
         LocalDateTime startOfDay = localDate.atStartOfDay();
         LocalDateTime endOfDay = localDate.atTime(LocalTime.MAX);
 
-        // Fetch booked appointments
         List<Appointment> bookedAppointments = appointmentRepository
                 .findByDoctorIdAndAppointmentTimeBetween(doctorId, startOfDay, endOfDay);
 
-        // Convert booked appointment times to strings (HH:mm) for comparison
         List<String> bookedTimes = bookedAppointments.stream()
                 .map(appt -> appt.getAppointmentTime().toLocalTime().toString()) 
                 .collect(Collectors.toList());
 
-        // Filter: Keep slots that are NOT in bookedTimes
         return allSlots.stream()
                 .filter(slot -> !bookedTimes.contains(slot))
                 .collect(Collectors.toList());
     }
 
-    // 5. saveDoctor Method
+    // 5. saveDoctor
     @Transactional
     public int saveDoctor(Doctor doctor) {
         try {
             if (doctorRepository.findByEmail(doctor.getEmail()) != null) {
-                return -1; // Conflict
+                return -1; 
             }
-            // Hash password before saving
             doctor.setPassword(service.hashPassword(doctor.getPassword()));
             doctorRepository.save(doctor);
-            return 1; // Success
+            return 1;
         } catch (Exception e) {
             e.printStackTrace();
-            return 0; // Error
+            return 0;
         }
     }
 
-    // 6. updateDoctor Method
+    // 6. updateDoctor
     @Transactional
     public int updateDoctor(Doctor doctor) {
         try {
             if (!doctorRepository.existsById(doctor.getId())) {
-                return -1; // Not found
+                return -1;
             }
-            // Ensure we don't overwrite password with null/empty if not provided
-            // Logic depends on specific update requirements, usually fetching existing first
             Doctor existing = doctorRepository.findById(doctor.getId()).get();
             
-            // Map fields to update
             existing.setName(doctor.getName());
             existing.setPhone(doctor.getPhone());
             existing.setSpecialty(doctor.getSpecialty());
             existing.setAvailableTimes(doctor.getAvailableTimes());
-            // Only update password if a new one is provided
+            
             if (doctor.getPassword() != null && !doctor.getPassword().isEmpty()) {
                 existing.setPassword(service.hashPassword(doctor.getPassword()));
             }
@@ -114,22 +104,20 @@ public class DoctorService {
         }
     }
 
-    // 7. getDoctors Method
+    // 7. getDoctors
     @Transactional(readOnly = true)
     public List<Doctor> getDoctors() {
         return doctorRepository.findAll();
     }
 
-    // 8. deleteDoctor Method
+    // 8. deleteDoctor
     @Transactional
     public int deleteDoctor(Long id) {
         try {
             if (!doctorRepository.existsById(id)) {
                 return -1;
             }
-            // Delete associated appointments first
             appointmentRepository.deleteAllByDoctorId(id);
-            // Delete doctor
             doctorRepository.deleteById(id);
             return 1;
         } catch (Exception e) {
@@ -137,87 +125,85 @@ public class DoctorService {
         }
     }
 
-    // 9. validateDoctor Method
+    // 9. validateDoctor
     public String validateDoctor(Login login) {
         Doctor doctor = doctorRepository.findByEmail(login.getEmail());
         if (doctor != null && service.checkPassword(login.getPassword(), doctor.getPassword())) {
-            return tokenService.generateToken(doctor.getId(), "doctor");
+            // Uses generateToken, which was NOT affected by the parser error
+            return tokenService.generateToken(doctor.getEmail());
         }
         return "Invalid Credentials";
     }
 
-    // 10. findDoctorByName Method
-    @Transactional(readOnly = true) //*******
-    public Map<String, Object> findDoctorByName(String name) {
-        return wrapDoctors(doctorRepository.findByNameLike(name));
-    }
-
-    // Helper to check time period (AM/PM)
-    private boolean isTimeInPeriod(String time, String period) {
-        // Assuming time format "HH:mm"
-        int hour = Integer.parseInt(time.split(":")[0]);
-        if ("AM".equalsIgnoreCase(period)) {
-            return hour < 12;
-        } else if ("PM".equalsIgnoreCase(period)) {
-            return hour >= 12;
-        }
-        return false;
-    }
-
-    // Helper to filter a list of doctors by time availability
-    private List<Doctor> filterListByTime(List<Doctor> doctors, String timePeriod) {
+    // --------------------------------------------------------------------------------
+    // Helpers
+    // --------------------------------------------------------------------------------
+    
+    private List<Doctor> filterDoctorByTime(List<Doctor> doctors, String amOrPm) {
         return doctors.stream()
                 .filter(doc -> doc.getAvailableTimes().stream()
-                        .anyMatch(t -> isTimeInPeriod(t, timePeriod)))
+                        .anyMatch(time -> {
+                            int hour = Integer.parseInt(time.split(":")[0]);
+                            if ("AM".equalsIgnoreCase(amOrPm)) return hour < 12;
+                            if ("PM".equalsIgnoreCase(amOrPm)) return hour >= 12;
+                            return false;
+                        }))
                 .collect(Collectors.toList());
     }
 
-    // 11. filterDoctorsByNameSpecilityandTime Method
-    @Transactional(readOnly = true) //########
-    public Map<String, Object> filterDoctorsByNameSpecilityandTime(String name, String specialty, String time) {
-        List<Doctor> doctors = doctorRepository.findByNameContainingIgnoreCaseAndSpecialtyIgnoreCase(name, specialty);
-        return wrapDoctors(filterListByTime(doctors, time));
-    }
-
-    // 12. filterDoctorByTime Method (Assuming single doctor list filtering logic is handled in filterDoctorsByTime below)
-    // 17. filterDoctorsByTime Method
-    // Filters ALL doctors by time.
-    @Transactional(readOnly = true) //############
-    public Map<String, Object> filterDoctorsByTime(String time) {
-        List<Doctor> allDoctors = doctorRepository.findAll();
-        return wrapDoctors(filterListByTime(allDoctors, time));
-    }
-
-    // 13. filterDoctorByNameAndTime Method
-    @Transactional(readOnly = true) //##########
-    public Map<String, Object> filterDoctorByNameAndTime(String name, String time) {
-        List<Doctor> doctors = doctorRepository.findByNameLike(name);
-        return wrapDoctors(filterListByTime(doctors, time));
-    }
-
-    // 14. filterDoctorByNameAndSpecility Method
-    @Transactional(readOnly = true) //###########
-    public Map<String, Object> filterDoctorByNameAndSpecility(String name, String specialty) {
-        return wrapDoctors(doctorRepository.findByNameContainingIgnoreCaseAndSpecialtyIgnoreCase(name, specialty));
-    }
-
-    // 15. filterDoctorByTimeAndSpecility Method
-    @Transactional(readOnly = true) //####
-    public Map<String, Object> filterDoctorByTimeAndSpecility(String time, String specialty) {
-        List<Doctor> doctors = doctorRepository.findBySpecialtyIgnoreCase(specialty);
-        return wrapDoctors(filterListByTime(doctors, time));
-    }
-
-    // 16. filterDoctorBySpecility Method
-    @Transactional(readOnly = true)
-    public Map<String, Object> filterDoctorBySpecility(String specialty) {
-        return wrapDoctors(doctorRepository.findBySpecialtyIgnoreCase(specialty));
-    }
-
-    // Helper to wrap list in Map
     private Map<String, Object> wrapDoctors(List<Doctor> doctors) {
         Map<String, Object> response = new HashMap<>();
         response.put("doctors", doctors);
         return response;
+    }
+
+    // --------------------------------------------------------------------------------
+    // Filtering Methods
+    // --------------------------------------------------------------------------------
+
+    // 10. findDoctorByName
+    @Transactional(readOnly = true)
+    public Map<String, Object> findDoctorByName(String name) {
+        return wrapDoctors(doctorRepository.findByNameLike(name));
+    }
+
+    // 11. filterDoctorsByNameSpecilityandTime
+    @Transactional(readOnly = true)
+    public Map<String, Object> filterDoctorsByNameSpecilityandTime(String name, String specialty, String amOrPm) {
+        List<Doctor> doctors = doctorRepository.findByNameContainingIgnoreCaseAndSpecialtyIgnoreCase(name, specialty);
+        return wrapDoctors(filterDoctorByTime(doctors, amOrPm));
+    }
+
+    // 17. filterDoctorsByTime
+    @Transactional(readOnly = true)
+    public Map<String, Object> filterDoctorsByTime(String amOrPm) {
+        List<Doctor> allDoctors = doctorRepository.findAll();
+        return wrapDoctors(filterDoctorByTime(allDoctors, amOrPm));
+    }
+
+    // 13. filterDoctorByNameAndTime
+    @Transactional(readOnly = true)
+    public Map<String, Object> filterDoctorByNameAndTime(String name, String amOrPm) {
+        List<Doctor> doctors = doctorRepository.findByNameLike(name);
+        return wrapDoctors(filterDoctorByTime(doctors, amOrPm));
+    }
+
+    // 14. filterDoctorByNameAndSpecility
+    @Transactional(readOnly = true)
+    public Map<String, Object> filterDoctorByNameAndSpecility(String name, String specialty) {
+        return wrapDoctors(doctorRepository.findByNameContainingIgnoreCaseAndSpecialtyIgnoreCase(name, specialty));
+    }
+
+    // 15. filterDoctorByTimeAndSpecility
+    @Transactional(readOnly = true)
+    public Map<String, Object> filterDoctorByTimeAndSpecility(String time, String specialty) {
+        List<Doctor> doctors = doctorRepository.findBySpecialtyIgnoreCase(specialty);
+        return wrapDoctors(filterDoctorByTime(doctors, time));
+    }
+
+    // 16. filterDoctorBySpecility
+    @Transactional(readOnly = true)
+    public Map<String, Object> filterDoctorBySpecility(String specialty) {
+        return wrapDoctors(doctorRepository.findBySpecialtyIgnoreCase(specialty));
     }
 }
