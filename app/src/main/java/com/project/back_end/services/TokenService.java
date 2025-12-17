@@ -1,3 +1,5 @@
+package com.project.back_end.services;
+
 import com.project.back_end.repo.AdminRepository;
 import com.project.back_end.repo.DoctorRepository;
 import com.project.back_end.repo.PatientRepository;
@@ -58,6 +60,7 @@ public class TokenService {
         // ERROR FIX: Using Jwts.parser() instead of parserBuilder() to match common 0.9.x versions and your hints
         return Jwts.parser()
                 .setSigningKey(getSigningKey())
+                .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();

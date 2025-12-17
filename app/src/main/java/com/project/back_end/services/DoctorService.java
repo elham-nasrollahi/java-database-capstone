@@ -1,3 +1,5 @@
+package com.project.back_end.services;
+
 import com.project.back_end.DTO.Login;
 import com.project.back_end.models.Appointment;
 import com.project.back_end.models.Doctor;
@@ -6,6 +8,7 @@ import com.project.back_end.repo.DoctorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.annotation.Lazy;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,7 +30,7 @@ public class DoctorService {
     private final com.project.back_end.services.Service service;
 
     // 2. Constructor Injection
-    @Autowired
+    @Lazy
     public DoctorService(DoctorRepository doctorRepository, 
                          AppointmentRepository appointmentRepository, 
                          TokenService tokenService,
