@@ -6,16 +6,12 @@ function selectRole(role) {
   if (role === "admin") {
     if (token) {
       window.location.href = `/adminDashboard/${token}`;
-    } else {
-      window.location.href = `/adminDashboard`;
     }
   } if (role === "patient") {
     window.location.href = "/pages/patientDashboard.html";
   } else if (role === "doctor") {
     if (token) {
       window.location.href = `/doctorDashboard/${token}`;
-    } else {
-      window.location.href = `/doctorDashboard`;
     }
   } else if (role === "loggedPatient") {
     window.location.href = "/pages/loggedPatientDashboard.html";

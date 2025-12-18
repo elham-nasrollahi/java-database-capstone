@@ -99,3 +99,6 @@ export function openModal(type) {
     document.getElementById('doctorLoginBtn').addEventListener('click', doctorLoginHandler);
   }
 }
+
+// Make openModal available globally for header.js and other scripts
+window.openModal = openModal;

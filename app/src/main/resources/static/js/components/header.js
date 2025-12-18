@@ -164,7 +164,7 @@ function renderHeader() {
          <nav>`;
 
   // 6. Handle Session Expiry or Invalid Login
-  if ((role === "loggedPatient") && !token) {
+  if ((role === "loggedPatient" || role === "admin" || role === "doctor") && !token) {
     localStorage.removeItem("userRole");
     alert("Session expired or invalid login. Please log in again.");
     window.location.href = "../index.html";

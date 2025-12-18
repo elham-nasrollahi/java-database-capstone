@@ -51,11 +51,6 @@ public class DashboardController {
         }
     }
 
-    @GetMapping("/adminDashboard")
-    public String adminDashboardNoToken() {
-        return "admin/adminDashboard";
-    }
-
     // 4. Define the `doctorDashboard` Method
     @GetMapping("/doctorDashboard/{token}")
     public String doctorDashboard(@PathVariable String token) {
@@ -69,8 +64,4 @@ public class DashboardController {
         }
     }
 
-    @GetMapping("/doctorDashboard")
-    public String doctorDashboardNoToken() {
-        return "doctor/doctorDashboard";
-    }
 }
