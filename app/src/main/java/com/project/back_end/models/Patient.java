@@ -24,7 +24,6 @@ public class Patient {
 //      - The @Email annotation validates that the email address follows a valid email format (e.g., patient@example.com).
     @NotNull(message = "Email is required")
     @Email(message = "Email should be valid")
-    @Pattern(regexp = "\\d{10}")
     private String email;
 
 //      - Represents the patient's password for login authentication.
