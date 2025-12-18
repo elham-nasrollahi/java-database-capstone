@@ -67,19 +67,19 @@
 */
 
 // Import the openModal function to handle showing login popups/modals
-import { openModal } from '../components/modals.js'; 
+import { openModal } from '../components/modals.js';
 
 // Import the base API URL from the config file
 // Assuming a config.js exists, otherwise we define the base URL here
-import { BASE_URL } from '../config/config.js'; 
+import { BASE_URL } from '../config/config.js';
 
 // Define constants for the admin and doctor login API endpoints
 const ADMIN_API = `${BASE_URL}/admin`;
 const DOCTOR_API = `${BASE_URL}/doctor/login`;
 
 // Use the window.onload event to ensure DOM elements are available after page load
-window.onload = function() {
-    
+window.onload = function () {
+
     // Select the buttons for role selection
     // Note: IDs match those generated in index.html (btn-admin, btn-doctor)
     const adminBtn = document.getElementById("btn-admin");
@@ -89,6 +89,7 @@ window.onload = function() {
     // If the admin login button exists, add click listener
     if (adminBtn) {
         adminBtn.addEventListener("click", () => {
+            selectRole('admin'); // Set role first
             openModal('adminLogin'); // Show admin login modal
         });
     }
@@ -96,6 +97,7 @@ window.onload = function() {
     // If the doctor login button exists, add click listener
     if (doctorBtn) {
         doctorBtn.addEventListener("click", () => {
+            selectRole('doctor'); // Set role first
             openModal('doctorLogin'); // Show doctor login modal
         });
     }
@@ -103,8 +105,9 @@ window.onload = function() {
     // Patient button handler (implied for completeness)
     if (patientBtn) {
         patientBtn.addEventListener("click", () => {
+            selectRole('patient'); // Set role first
             // Patients usually have a separate flow or login/signup choice
-            openModal('patientLogin'); 
+            openModal('patientLogin');
         });
     }
 };
@@ -114,8 +117,8 @@ window.onload = function() {
 ----------------------------------------------------------- */
 
 // Define a function named adminLoginHandler on the global window object
-window.adminLoginHandler = async function() {
-    
+window.adminLoginHandler = async function () {
+
     // Step 1: Get the entered username and password from the input fields
     const usernameInput = document.getElementById("adminUsername");
     const passwordInput = document.getElementById("adminPassword");
@@ -145,15 +148,15 @@ window.adminLoginHandler = async function() {
         if (response.ok) {
             // Parse the JSON response to get the token
             const data = await response.json();
-            
+
             // Store the token and role in localStorage
             // Note: Storing 'userRole' is essential for header.js to work correctly
-            localStorage.setItem("token", data.token); 
+            localStorage.setItem("token", data.token);
             localStorage.setItem("userRole", "admin");
 
             // Proceed to admin dashboard
             alert("Login Successful!");
-            window.location.href = "pages/adminDashboard.html"; 
+            window.location.href = "pages/adminDashboard.html";
         } else {
             // Step 5: If login fails or credentials are invalid
             alert("Invalid Admin credentials. Please try again.");
@@ -170,7 +173,7 @@ window.adminLoginHandler = async function() {
 ----------------------------------------------------------- */
 
 // Define a function named doctorLoginHandler on the global window object
-window.doctorLoginHandler = async function() {
+window.doctorLoginHandler = async function () {
 
     // Step 1: Get the entered email and password from the input fields
     const emailInput = document.getElementById("doctorEmail");

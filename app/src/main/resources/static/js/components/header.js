@@ -214,14 +214,14 @@ function attachHeaderButtonListeners() {
   if (loginBtn) {
     loginBtn.addEventListener("click", () => {
       // Assuming openModal is a global utility function from util.js
-      if (typeof openModal === 'function') openModal('login');
+      if (typeof openModal === 'function') openModal('patientLogin');
       else console.warn("openModal function not found");
     });
   }
 
   if (signupBtn) {
     signupBtn.addEventListener("click", () => {
-      if (typeof openModal === 'function') openModal('signup');
+      if (typeof openModal === 'function') openModal('patientSignup');
       else console.warn("openModal function not found");
     });
   }
