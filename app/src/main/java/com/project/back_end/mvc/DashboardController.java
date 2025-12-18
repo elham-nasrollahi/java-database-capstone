@@ -68,4 +68,9 @@ public class DashboardController {
             return "redirect:/"; //
         }
     }
+
+    @GetMapping("/doctorDashboard")
+    public String doctorDashboardNoToken() {
+        return "doctor/doctorDashboard";
+    }
 }
